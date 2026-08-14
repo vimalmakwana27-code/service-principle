@@ -31,14 +31,7 @@ resource "azurerm_subnet" "snets" {
 
 }
 
-resource "azurerm_storage_account" "storage" {
-  name                     = "storage623456"
-  location                 = "centralus"
-  resource_group_name      = azurerm_resource_group.rgs.name
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
 
-}
 
 resource "azurerm_network_interface" "nics" {
   name                = "nic-1"
