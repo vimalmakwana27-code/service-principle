@@ -6,29 +6,22 @@ on:
       - "feature/**"
       - main
 
-  pull_request:
-    branches:
-      - main
-
 permissions:
   id-token: write
   contents: read
 
 jobs:
   terraform:
-    name: Terraform Security & Plan
+    name: Terraform Security, Plan and Apply
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # Azure Login
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -36,33 +29,29 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # Terraform Format Check
       - name: Terraform Format Check
         run: terraform fmt -check
 
-      # Terraform Init
       - name: Terraform Init
         run: terraform init
 
-      # Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      # Terraform Security Scan
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.3
 
-      # Gitleaks Secret Scan
       - name: Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v2
 
-      # Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # Upload Terraform Plan
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
           path: tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
