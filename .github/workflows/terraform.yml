@@ -4,10 +4,15 @@ on:
   push:
     branches:
       - "feature/**"
+      - main
 
   pull_request:
     branches:
       - main
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   terraform:
@@ -15,81 +20,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # ------------------------------------------------
-      # 1. Checkout Repository
-      # ------------------------------------------------
-      - name: Checkout Code
+      # Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-
-      # ------------------------------------------------
-      # 2. Setup Terraform
-      # ------------------------------------------------
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # Azure Login
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # ------------------------------------------------
-      # 3. Terraform Format Check
-      # ------------------------------------------------
+      # Terraform Format Check
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+        run: terraform fmt -check
 
-
-      # ------------------------------------------------
-      # 4. Terraform Init
-      # ------------------------------------------------
+      # Terraform Init
       - name: Terraform Init
         run: terraform init
 
-
-      # ------------------------------------------------
-      # 5. Terraform Validate
-      # ------------------------------------------------
+      # Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-
-      # =================================================
-      # SECURITY SCAN
-      # =================================================
-
-      # ------------------------------------------------
-      # 6. TFLint
-      # ------------------------------------------------
-   
-
-      # ------------------------------------------------
-      # 7. TFSEC Security Scan
-      # ------------------------------------------------
+      # Terraform Security Scan
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.3
-        with:
-          soft_fail: false
 
-
-      # ------------------------------------------------
-      # 8. Gitleaks Secret Scan
-      # ------------------------------------------------
+      # Gitleaks Secret Scan
       - name: Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v2
 
-
-      # =================================================
-      # TERRAFORM PLAN
-      # =================================================
-
-      # ------------------------------------------------
-      # 9. Terraform Plan
-      # ------------------------------------------------
+      # Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-
-      # ------------------------------------------------
-      # 10. Upload Terraform Plan
-      # ------------------------------------------------
+      # Upload Terraform Plan
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
