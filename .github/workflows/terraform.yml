@@ -1,0 +1,97 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - "feature/**"
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    name: Terraform Security & Plan
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ------------------------------------------------
+      # 1. Checkout Repository
+      # ------------------------------------------------
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+
+      # ------------------------------------------------
+      # 2. Setup Terraform
+      # ------------------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+
+      # ------------------------------------------------
+      # 3. Terraform Format Check
+      # ------------------------------------------------
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+
+      # ------------------------------------------------
+      # 4. Terraform Init
+      # ------------------------------------------------
+      - name: Terraform Init
+        run: terraform init
+
+
+      # ------------------------------------------------
+      # 5. Terraform Validate
+      # ------------------------------------------------
+      - name: Terraform Validate
+        run: terraform validate
+
+
+      # =================================================
+      # SECURITY SCAN
+      # =================================================
+
+      # ------------------------------------------------
+      # 6. TFLint
+      # ------------------------------------------------
+   
+
+      # ------------------------------------------------
+      # 7. TFSEC Security Scan
+      # ------------------------------------------------
+      - name: Terraform Security Scan
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: false
+
+
+      # ------------------------------------------------
+      # 8. Gitleaks Secret Scan
+      # ------------------------------------------------
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+
+
+      # =================================================
+      # TERRAFORM PLAN
+      # =================================================
+
+      # ------------------------------------------------
+      # 9. Terraform Plan
+      # ------------------------------------------------
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+
+      # ------------------------------------------------
+      # 10. Upload Terraform Plan
+      # ------------------------------------------------
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: tfplan
