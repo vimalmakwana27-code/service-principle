@@ -3,7 +3,6 @@ name: Terraform CI
 on:
   push:
     branches:
-      - "feature/**"
       - main
 
 permissions:
