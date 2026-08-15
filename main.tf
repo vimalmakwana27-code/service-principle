@@ -10,7 +10,7 @@ provider "azurerm" {
   features {}
 }
 resource "azurerm_resource_group" "rgs" {
-  name     = "rg-1"
+  name     = "sapakda1"
   location = "centralus"
 
 }
