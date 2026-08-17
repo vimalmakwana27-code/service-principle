@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "rgs" {
 
 variable "vnet_names" {}
 resource "azurerm_virtual_network" "vnets" {
-  depends_on = [ azurerm_resource_group.rgs ]
+  depends_on          = [azurerm_resource_group.rgs]
   for_each            = var.vnet_names
   name                = each.value.name
   location            = each.value.location
@@ -17,8 +17,8 @@ resource "azurerm_virtual_network" "vnets" {
 }
 variable "sub_names" {}
 resource "azurerm_subnet" "subnets" {
-  depends_on = [ azurerm_virtual_network.vnets ]
-  for_each = var.sub_names
+  depends_on           = [azurerm_virtual_network.vnets]
+  for_each             = var.sub_names
   name                 = each.value.name
   virtual_network_name = each.value.virtual_network_name
   resource_group_name  = each.value.resource_group_name
