@@ -1,48 +1,27 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "5.0.0"
-    }
-  }
-}
-provider "azurerm" {
-  features {}
-}
+variable "rg_names" {}
 resource "azurerm_resource_group" "rgs" {
-  name     = "sapakda7"
-  location = "centralus"
+  for_each = var.rg_names
+  name     = each.value.name
+  location = each.value.location
 
 }
 
+variable "vnet_names" {}
 resource "azurerm_virtual_network" "vnets" {
-  name                = "vnet-1"
-  location            = azurerm_resource_group.rgs.location
-  resource_group_name = azurerm_resource_group.rgs.name
-  address_space       = ["10.0.0.0/16"]
-
+  depends_on          = [azurerm_resource_group.rgs]
+  for_each            = var.vnet_names
+  name                = each.value.name
+  location            = each.value.location
+  resource_group_name = each.value.resource_group_name
+  address_space       = each.value.address_space
 }
-
-resource "azurerm_subnet" "snets" {
-  name                 = "snte-1"
-  resource_group_name  = azurerm_resource_group.rgs.name
-  virtual_network_name = azurerm_virtual_network.vnets.name
-  address_prefixes     = ["10.0.1.0/24"]
-
-}
-
-
-
-resource "azurerm_network_interface" "nics" {
-  name                = "nic-1"
-  location            = azurerm_resource_group.rgs.location
-  resource_group_name = azurerm_resource_group.rgs.name
-
-  ip_configuration {
-    name                          = "ip-1"
-    subnet_id                     = azurerm_subnet.snets.id
-    private_ip_address_allocation = "Dynamic"
-
-  }
+variable "sub_names" {}
+resource "azurerm_subnet" "subnets" {
+  depends_on           = [azurerm_virtual_network.vnets]
+  for_each             = var.sub_names
+  name                 = each.value.name
+  virtual_network_name = each.value.virtual_network_name
+  resource_group_name  = each.value.resource_group_name
+  address_prefixes     = each.value.address_prefixes
 
 }
